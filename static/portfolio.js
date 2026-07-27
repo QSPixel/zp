@@ -238,23 +238,44 @@
   let curD = 'all';
 
   function updateFilters() {
-    const items = document.querySelectorAll('.g-item');
-    items.forEach((item) => {
-      let show = true;
-      if (curF !== 'all' && item.dataset.cat !== curF) show = false;
-      if (curD !== 'all' && item.dataset.device !== curD) show = false;
-      if (show) {
-        item.classList.remove('hidden');
-        // Staggered reveal
-        item.style.animation = 'none';
-        item.offsetHeight; // reflow
-        item.style.animation = '';
-      } else {
-        item.classList.add('hidden');
-      }
-    });
-    // Reset lightbox items on filter change
-    if (isOpen) close();
+    const grids = document.querySelectorAll('.g-grid');
+
+    // Phase 1: fade the grid container out
+    grids.forEach(function (g) { g.classList.add('g-fade'); });
+
+    // Phase 2: swap visibility while faded
+    setTimeout(function () {
+      var items = document.querySelectorAll('.g-item');
+      var vh = window.innerHeight;
+      items.forEach(function (item) {
+        var show = true;
+        if (curF !== 'all' && item.dataset.cat !== curF) show = false;
+        if (curD !== 'all' && item.dataset.device !== curD) show = false;
+        if (show) {
+          item.classList.remove('hidden');
+          // Immediately reveal items already in or near the viewport
+          var rect = item.getBoundingClientRect();
+          if (rect.top < vh + 200 && rect.bottom > -200) {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+            var img = item.querySelector('img');
+            if (img) img.classList.add('l-loaded');
+          }
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+
+      // Phase 3: fade back in after layout settles
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          grids.forEach(function (g) { g.classList.remove('g-fade'); });
+        });
+      });
+
+      // Reset lightbox on filter change
+      if (isOpen) close();
+    }, 180);
   }
 
   // Category filter buttons

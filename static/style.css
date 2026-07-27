@@ -273,9 +273,7 @@ img { display: block; max-width: 100%; }
 .g-item img {
   width: 100%; height: auto; display: block;
   border-radius: var(--radius);
-  transition: transform 0.55s var(--spring), opacity 0.5s var(--ease-out-expo), border-radius 0.3s var(--ease-out-expo);
   opacity: 0.88;
-  will-change: transform;
 }
 
 /* Scroll-reveal starting state — overridden by JS */
@@ -283,22 +281,17 @@ img { display: block; max-width: 100%; }
   transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--spring);
 }
 
-/* Filter: hidden items fade out smoothly */
+/* Filter: hidden items — clean removal from column flow (no position:absolute to avoid layout break) */
 .g-item.hidden {
-  display: block !important; /* override display:none for animation */
-  opacity: 0;
-  transform: scale(0.92);
-  pointer-events: none;
-  position: absolute;
-  visibility: hidden;
-  transition: opacity 0.35s var(--ease-out-expo), transform 0.35s var(--ease-out-expo), visibility 0s 0.35s;
+  display: none;
 }
 
-/* Filter: visible items animate in */
-.g-item:not(.hidden) {
-  position: relative;
-  visibility: visible;
-  transition: opacity 0.45s var(--ease-out-expo) 0.05s, transform 0.45s var(--spring) 0.05s, visibility 0s 0s;
+/* Container-level filter transition */
+.g-grid {
+  transition: opacity 0.25s var(--ease-out-expo);
+}
+.g-grid.g-fade {
+  opacity: 0.3;
 }
 
 .g-overlay {
@@ -313,7 +306,7 @@ img { display: block; max-width: 100%; }
 }
 
 /* Mobile: quick tap feedback */
-.g-item:active img { transform: scale(1.015); opacity: 1; }
+.g-item:active img.l-loaded { transform: scale(1.015); opacity: 1; }
 .g-item:active .g-overlay { opacity: 1; }
 
 /* ════════════════════════════════════════════════════
@@ -562,9 +555,9 @@ img { display: block; max-width: 100%; }
   .g-grid { columns: 4; column-gap: var(--gap); }
 
   /* Desktop hover — subtle Apple-style scale */
-  .g-item:hover img { transform: scale(1.025); opacity: 1; }
+  .g-item:hover img.l-loaded { transform: scale(1.025); opacity: 1; }
   .g-item:hover .g-overlay { opacity: 1; }
-  .g-item:active img { transform: scale(0.99); }
+  .g-item:active img.l-loaded { transform: scale(0.99); opacity: 1; }
   .g-item:active .g-overlay { opacity: 0; }
 
   .filters { padding: 0 32px 36px; }
@@ -661,13 +654,15 @@ img { display: block; max-width: 100%; }
   filter: blur(6px);
   transform: scale(1.05);
   transition: filter 0.5s ease-out, transform 0.5s var(--ease-out-expo), opacity 0.4s ease;
+  will-change: transform, filter;
 }
 .g-item img.l-loaded {
   filter: blur(0);
   transform: scale(1);
 }
+/* Desktop hover — subtle Apple-style zoom (only on loaded images) */
 .g-item:hover img.l-loaded { transform: scale(1.025); opacity: 1; }
-.g-item:active img.l-loaded { transform: scale(0.99); }
+.g-item:active img.l-loaded { transform: scale(0.99); opacity: 1; }
 
 /* ════════════════════════════════════════════════════
    SCROLL-TO-TOP BUTTON
